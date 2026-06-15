@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🍱 공채 2기 점심 모임</title>
+<style>
+  :root{
+    --bg:#0f1226; --bg2:#171a35; --card:#1e2244; --card2:#262b52;
+    --line:#33396e; --text:#eef0ff; --muted:#9aa0d4;
+    --accent:#7c83ff; --accent2:#52e0c4; --yes:#36d399; --no:#ff6b81; --pending:#5a608f;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+    background:radial-gradient(1200px 600px at 10% -10%,#1c2050 0%,transparent 60%),
+               radial-gradient(1000px 500px at 110% 10%,#15324a 0%,transparent 55%),
+               var(--bg);
+    color:var(--text); min-height:100vh; padding:24px 16px 64px;
+  }
+  .wrap{max-width:1080px;margin:0 auto}
+  header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}
+  .title{display:flex;align-items:center;gap:14px}
+  .title .logo{font-size:38px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4))}
+  .title h1{font-size:24px;margin:0;letter-spacing:-.5px}
+  .title .date{color:var(--muted);font-size:14px;margin-top:2px}
+  .me-box{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);
+          padding:8px 12px;border-radius:14px;box-shadow:var(--shadow)}
+  .me-box select{background:var(--card2);color:var(--text);border:1px solid var(--line);
+          border-radius:10px;padding:8px 10px;font-size:14px;outline:none}
+  .me-box label{font-size:12px;color:var(--muted)}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:880px){.grid{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--card) 0%,var(--bg2) 100%);
+        border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+  .card h2{margin:0 0 4px;font-size:17px;display:flex;align-items:center;gap:8px}
+  .card .sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+
+  /* attendance */
+  .att-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  @media(max-width:520px){.att-grid{grid-template-columns:1fr}}
+  .att{display:flex;align-items:center;justify-content:space-between;gap:8px;
+       background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+  .att.me{outline:2px solid var(--accent);outline-offset:1px}
+  .att .nm{font-weight:600;font-size:15px;display:flex;align-items:center;gap:6px}
+  .att .dot{width:9px;height:9px;border-radius:50%;background:var(--pending)}
+  .att.is-yes .dot{background:var(--yes)} .att.is-no .dot{background:var(--no)}
+  .toggle{display:flex;gap:6px}
+  .toggle button{border:1px solid var(--line);background:transparent;color:var(--muted);
+       border-radius:10px;padding:6px 10px;font-size:13px;cursor:pointer;transition:.15s}
+  .toggle button:hover{border-color:var(--accent)}
+  .toggle button.on-yes{background:var(--yes);color:#06281c;border-color:var(--yes);font-weight:700}
+  .toggle button.on-no{background:var(--no);color:#330810;border-color:var(--no);font-weight:700}
+  .toggle button:disabled{opacity:.4;cursor:not-allowed}
+
+  .stat-row{display:flex;gap:10px;margin-bottom:16px}
+  .stat{flex:1;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+  .stat .n{font-size:26px;font-weight:800}
+  .stat .l{font-size:12px;color:var(--muted);margin-top:2px}
+  .stat.yes .n{color:var(--yes)} .stat.no .n{color:var(--no)} .stat.pend .n{color:var(--muted)}
+
+  /* voting */
+  .vote-list{display:flex;flex-direction:column;gap:8px;max-height:none}
+  .vote{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--line);
+        border-radius:12px;padding:8px 10px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+  .vote:hover{border-color:var(--accent)}
+  .vote.mine{outline:2px solid var(--accent2)}
+  .vote.lead{border-color:var(--accent2)}
+  .vote .bar{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(124,131,255,.30),rgba(82,224,196,.22));width:0;transition:width .4s ease}
+  .vote .rn{position:relative;font-weight:700;font-size:15px;flex:1}
+  .vote .cnt{position:relative;font-size:13px;color:var(--muted);min-width:34px;text-align:right}
+  .vote .crown{position:relative;font-size:16px}
+  .vote-hint{font-size:12px;color:var(--muted);margin-top:10px}
+  .vote.disabled{opacity:.5;pointer-events:none}
+
+  .winner{margin-top:14px;background:linear-gradient(135deg,rgba(82,224,196,.16),rgba(124,131,255,.16));
+          border:1px solid var(--accent2);border-radius:14px;padding:14px;text-align:center}
+  .winner .lbl{font-size:12px;color:var(--accent2);letter-spacing:1px}
+  .winner .nm{font-size:22px;font-weight:800;margin-top:2px}
+  .winner .sub{font-size:12px;color:var(--muted);margin-top:2px}
+
+  .roster{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{font-size:12px;padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:var(--card2);color:var(--muted)}
+  .chip.yes{color:#06281c;background:var(--yes);border-color:var(--yes)}
+  .chip.no{color:#330810;background:var(--no);border-color:var(--no)}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;margin-top:28px}
+  .pill{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);
+        border-radius:999px;padding:4px 10px;font-size:12px}
+  .pill .live{width:8px;height:8px;border-radius:50%;background:var(--yes);box-shadow:0 0 0 0 rgba(54,211,153,.7);animation:pulse 1.8s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(54,211,153,.6)}70%{box-shadow:0 0 0 8px rgba(54,211,153,0)}100%{box-shadow:0 0 0 0 rgba(54,211,153,0)}}
+  .banner{background:#3a1d2b;border:1px solid var(--no);color:#ffd5dd;border-radius:14px;padding:14px 16px;margin-bottom:18px;font-size:14px;line-height:1.6}
+  .banner code{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="title">
+      <div class="logo">🍱</div>
+      <div>
+        <h1>공채 2기 점심 모임</h1>
+        <div class="date" id="todayLabel">날짜 로딩 중…</div>
+      </div>
+    </div>
+    <div class="me-box">
+      <label>내 이름</label>
+      <select id="meSelect"><option value="">선택하세요</option></select>
+      <span class="pill"><span class="live"></span>실시간</span>
+    </div>
+  </header>
+
+  <div id="configBanner" class="banner" style="display:none">
+    ⚠️ <b>Firebase 설정이 필요합니다.</b> 아래 코드의 <code>firebaseConfig</code> 값을 본인 Firebase 프로젝트 값으로 채워주세요.
+    설정 방법은 <b>설정가이드.md</b> 참고. 설정 전에는 데이터가 저장/공유되지 않습니다.
+  </div>
+
+  <div class="grid">
+    <!-- 출결 -->
+    <section class="card">
+      <h2>✅ 오늘 점심 참석 체크</h2>
+      <div class="sub">본인 이름의 <b>참석 / 불참</b>을 눌러주세요. 모두에게 실시간 반영됩니다.</div>
+      <div class="stat-row">
+        <div class="stat yes"><div class="n" id="cntYes">0</div><div class="l">참석</div></div>
+        <div class="stat no"><div class="n" id="cntNo">0</div><div class="l">불참</div></div>
+        <div class="stat pend"><div class="n" id="cntPend">10</div><div class="l">미응답</div></div>
+      </div>
+      <div class="att-grid" id="attGrid"></div>
+    </section>
+
+    <!-- 투표 -->
+    <section class="card">
+      <h2>🗳️ 점심 식당 투표</h2>
+      <div class="sub"><b>참석</b>으로 체크한 분만 투표할 수 있어요. 한 곳을 선택하세요 (변경 가능).</div>
+      <div class="vote-list" id="voteList"></div>
+      <div class="vote-hint" id="voteHint">내 이름을 선택하고 ‘참석’을 누르면 투표가 열립니다.</div>
+      <div class="winner" id="winnerBox" style="display:none">
+        <div class="lbl">현재 1위 식당</div>
+        <div class="nm" id="winnerName">-</div>
+        <div class="sub" id="winnerSub"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 대시보드 -->
+  <section class="card" style="margin-top:18px">
+    <h2>📊 실시간 현황 대시보드</h2>
+    <div class="sub">참석 명단과 식당별 득표를 한눈에. (마지막 갱신: <span id="updatedAt">-</span>)</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:4px">참석</div>
+    <div class="roster" id="rosterYes"></div>
+    <div style="font-size:13px;color:var(--muted);margin:12px 0 4px">불참</div>
+    <div class="roster" id="rosterNo"></div>
+    <div style="font-size:13px;color:var(--muted);margin:12px 0 4px">미응답</div>
+    <div class="roster" id="rosterPend"></div>
+  </section>
+
+  <footer>
+    공채 2기방 점심봇 · 데이터는 날짜별로 자동 분리되어 매일 새로 시작됩니다 · 매일 오전 10시 Teams 알림
+  </footer>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+/* =========================================================================
+   ① Firebase 설정 — 본인 프로젝트 값으로 교체하세요 (설정가이드.md 참고)
+   Firebase 콘솔 > 프로젝트 설정 > 내 앱(웹) > SDK 설정 및 구성 > "구성"
+   ========================================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyBcr_SiaejG1312na9Ro71V4ypriq60y6I",
+  authDomain: "lunch-ef42a.firebaseapp.com",
+  databaseURL: "https://lunch-ef42a-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "lunch-ef42a",
+  storageBucket: "lunch-ef42a.firebasestorage.app",
+  messagingSenderId: "563012499996",
+  appId: "1:563012499996:web:48a1537a460238fb2dfdd9"
+};
+
+/* ② 멤버 / 식당 목록 (필요시 수정) */
+const MEMBERS = ["안소현","오주영","안시현","조상은","이태림","장채아","윤혜준","최준영","용성민","김진영"];
+const RESTAURANTS = ["또바기","명품가마","장꼬방","오니기리","수라간","칼국수","엄마손","더진국","진지왕","참진","김치찌개"];
+
+/* ---------- 내부 로직 ---------- */
+const $ = id => document.getElementById(id);
+const idOf = s => "m" + MEMBERS.indexOf(s);      // member key
+const ridOf = s => "r" + RESTAURANTS.indexOf(s); // restaurant key
+
+function todayKST(){
+  const f = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'});
+  return f.format(new Date()); // YYYY-MM-DD
+}
+function todayLabelKST(){
+  const f = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  return f.format(new Date());
+}
+
+const DAY = todayKST();
+$('todayLabel').textContent = todayLabelKST();
+
+let db=null, configured=false;
+let state = { attendance:{}, votes:{} };
+let me = localStorage.getItem('lunch_me') || "";
+
+// firebase init (guarded)
+if(!firebaseConfig.apiKey.startsWith("PASTE_")){
+  try{
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    configured = true;
+  }catch(e){ console.error(e); }
+}
+if(!configured){ $('configBanner').style.display='block'; }
+
+/* build member select */
+const sel = $('meSelect');
+MEMBERS.forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
+sel.value = me;
+sel.addEventListener('change', ()=>{ me = sel.value; localStorage.setItem('lunch_me',me); render(); });
+
+/* DB refs */
+function attRef(mid){ return db.ref(`lunch/${DAY}/attendance/${mid}`); }
+function voteRef(mid){ return db.ref(`lunch/${DAY}/votes/${mid}`); }
+
+/* writes */
+function setAttendance(name, val){
+  if(!configured){ alert("Firebase 설정 후 사용 가능합니다."); return; }
+  const mid = idOf(name);
+  // local toggle: if same value -> clear
+  const cur = state.attendance[mid];
+  const next = (cur===val) ? null : val;
+  attRef(mid).set(next);
+  if(next!=='yes'){ voteRef(mid).remove(); } // 불참/취소 시 투표 제거
+}
+function setVote(name, rname){
+  if(!configured){ alert("Firebase 설정 후 사용 가능합니다."); return; }
+  const mid = idOf(name);
+  if(state.attendance[mid]!=='yes'){ return; }
+  const cur = state.votes[mid];
+  const rid = ridOf(rname);
+  voteRef(mid).set(cur===rid ? null : rid);
+}
+
+/* realtime listeners */
+if(configured){
+  db.ref(`lunch/${DAY}/attendance`).on('value', s=>{ state.attendance = s.val()||{}; render(); });
+  db.ref(`lunch/${DAY}/votes`).on('value', s=>{ state.votes = s.val()||{}; render(); });
+}
+
+/* ---------- render ---------- */
+function render(){
+  const att = state.attendance, votes = state.votes;
+  let yes=0,no=0;
+  // attendance grid
+  const grid = $('attGrid'); grid.innerHTML='';
+  MEMBERS.forEach(name=>{
+    const mid=idOf(name); const v=att[mid];
+    if(v==='yes')yes++; else if(v==='no')no++;
+    const el=document.createElement('div');
+    el.className='att'+(v==='yes'?' is-yes':v==='no'?' is-no':'')+(name===me?' me':'');
+    el.innerHTML=`<span class="nm"><span class="dot"></span>${name}</span>
+      <span class="toggle">
+        <button data-n="${name}" data-v="yes" class="${v==='yes'?'on-yes':''}">참석</button>
+        <button data-n="${name}" data-v="no" class="${v==='no'?'on-no':''}">불참</button>
+      </span>`;
+    grid.appendChild(el);
+  });
+  grid.querySelectorAll('button').forEach(b=>{
+    b.onclick=()=>setAttendance(b.dataset.n,b.dataset.v);
+    if(me && b.dataset.n!==me) b.disabled=false; // 누구나 누를 수 있게 허용(이름 미선택도 가능은 막기)
+    if(!me) b.disabled=true;
+  });
+  $('cntYes').textContent=yes; $('cntNo').textContent=no; $('cntPend').textContent=MEMBERS.length-yes-no;
+
+  // votes tally
+  const tally={}; RESTAURANTS.forEach(r=>tally[ridOf(r)]=0);
+  let totalVotes=0;
+  Object.entries(votes).forEach(([mid,rid])=>{
+    if(att[mid]==='yes' && rid in tally){ tally[rid]++; totalVotes++; }
+  });
+  const maxCnt=Math.max(0,...Object.values(tally));
+  const myAtt = me ? att[idOf(me)] : null;
+  const myVote = me ? votes[idOf(me)] : null;
+
+  const vl=$('voteList'); vl.innerHTML='';
+  RESTAURANTS.forEach(r=>{
+    const rid=ridOf(r); const c=tally[rid];
+    const lead = (maxCnt>0 && c===maxCnt);
+    const el=document.createElement('div');
+    el.className='vote'+(myVote===rid?' mine':'')+(lead?' lead':'')+((myAtt==='yes')?'':' disabled');
+    const pct = totalVotes? Math.round(c/totalVotes*100):0;
+    el.innerHTML=`<span class="bar" style="width:${maxCnt?Math.round(c/maxCnt*100):0}%"></span>
+      <span class="crown">${lead && c>0?'👑':'🍽️'}</span>
+      <span class="rn">${r}</span>
+      <span class="cnt">${c}표</span>`;
+    el.onclick=()=>setVote(me,r);
+    vl.appendChild(el);
+  });
+  $('voteHint').textContent = !me ? '내 이름을 선택해주세요.'
+      : myAtt!=='yes' ? '‘참석’으로 체크하면 투표가 열립니다.'
+      : `투표 완료된 인원: ${totalVotes}명 / 참석 ${yes}명`;
+
+  // winner
+  const wb=$('winnerBox');
+  if(maxCnt>0){
+    const leaders=RESTAURANTS.filter(r=>tally[ridOf(r)]===maxCnt);
+    wb.style.display='block';
+    $('winnerName').textContent = leaders.join(' · ');
+    $('winnerSub').textContent = leaders.length>1 ? `동률 ${maxCnt}표 — 최종 결정 필요!` : `${maxCnt}표 획득`;
+  }else{ wb.style.display='none'; }
+
+  // roster
+  const ry=$('rosterYes'),rn=$('rosterNo'),rp=$('rosterPend');
+  ry.innerHTML=rn.innerHTML=rp.innerHTML='';
+  MEMBERS.forEach(name=>{
+    const v=att[idOf(name)];
+    const chip=document.createElement('span');
+    chip.className='chip '+(v==='yes'?'yes':v==='no'?'no':'');
+    let voteTxt='';
+    if(v==='yes'){ const rv=votes[idOf(name)]; if(rv!=null){ const ri=parseInt(rv.slice(1)); if(RESTAURANTS[ri]) voteTxt=' · '+RESTAURANTS[ri]; } }
+    chip.textContent=name+voteTxt;
+    (v==='yes'?ry:v==='no'?rn:rp).appendChild(chip);
+  });
+  if(ry.children.length===0) ry.innerHTML='<span class="chip">아직 없음</span>';
+  if(rn.children.length===0) rn.innerHTML='<span class="chip">아직 없음</span>';
+  if(rp.children.length===0) rp.innerHTML='<span class="chip">전원 응답 완료 🎉</span>';
+
+  $('updatedAt').textContent = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date());
+}
+render();
+</script>
+</body>
+</html>
