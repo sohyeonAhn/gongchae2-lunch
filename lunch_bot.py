@@ -235,8 +235,21 @@ def post_to_teams(text):
         print("[OK] Posted to Teams:", r.status)
 
 
+def mark_sent(kind):
+    """오늘 이 모드를 보냈다고 Firebase에 표식. 다음 회차가 중복 전송하지 않도록."""
+    url = f"{DB_BASE}/lunch/{today}/sent/{kind}.json"
+    req = urllib.request.Request(url, data=b"true", method="PUT",
+                                 headers={"content-type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=15):
+            print(f"[OK] marked sent: {kind}")
+    except Exception as e:
+        print("[WARN] mark_sent failed:", e)
+
+
 def main():
-    mode = (sys.argv[1] if len(sys.argv) > 1 else "result").strip().lower()
+    mode  = (sys.argv[1] if len(sys.argv) > 1 else "result").strip().lower()
+    force = (len(sys.argv) > 2 and sys.argv[2].lower() == "force")  # 수동 실행 시 중복가드 무시
     if now.weekday() >= 5:   # 토(5)/일(6)
         print("[SKIP] Weekend.")
         return
@@ -244,15 +257,20 @@ def main():
         print("[ERROR] WEBHOOK_URL secret is not set."); sys.exit(1)
 
     data = fetch_today()
-    agg = aggregate(data)
+    sent = (data or {}).get("sent", {}) or {}
+    if sent.get(mode) and not force:
+        print(f"[SKIP] '{mode}' already sent today ({today}).")
+        return
 
+    agg = aggregate(data)
     if mode == "request":
         msg = generate(request_prompt()) or fallback_request()
     else:
         msg = generate(result_prompt(agg)) or fallback_result(agg)
 
     print("----- message -----\n" + msg + "\n-------------------")
-    post_to_teams(msg)
+    post_to_teams(msg)        # 실패하면 예외 발생 → 표식 안 남기고 다음 회차에 재시도
+    mark_sent(mode)
 
 
 if __name__ == "__main__":
