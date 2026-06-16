@@ -1,0 +1,44 @@
+name: lunch-bot
+
+on:
+  schedule:
+    # GitHub cron은 UTC 기준. 한국시간(KST=UTC+9), 서머타임 없음.
+    - cron: '10 0 * * 1-5'   # 09:10 KST — 참석/투표 요청
+    - cron: '0 2 * * 1-5'    # 11:00 KST — 집계 결과 발표
+  workflow_dispatch:          # 수동 실행 버튼 (테스트용)
+    inputs:
+      mode:
+        description: 'request 또는 result'
+        required: false
+        default: 'result'
+
+permissions:
+  contents: read
+  models: read        # GitHub Models(무료 AI) 호출 권한
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run lunch bot
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}   # GitHub Models(무료 AI)용 — 자동 제공, 등록 불필요
+          GH_MODEL: openai/gpt-4o-mini
+          # 필요 시 아래도 Secret/Variable로 덮어쓸 수 있음 (없으면 스크립트 기본값 사용)
+          # DB_BASE: ${{ secrets.DB_BASE }}
+          # SITE_URL: ${{ secrets.SITE_URL }}
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+          if [ -z "$MODE" ]; then
+            MIN=$(TZ=Asia/Seoul date +%H%M); MIN=$((10#$MIN))
+            if [ "$MIN" -lt 1030 ]; then MODE=request; else MODE=result; fi
+          fi
+          echo "Running mode=$MODE (KST $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M'))"
+          python lunch_bot.py "$MODE"
