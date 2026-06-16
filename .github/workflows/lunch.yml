@@ -2,9 +2,10 @@ name: lunch-bot
 
 on:
   schedule:
-    # GitHub cron은 UTC 기준. 한국시간(KST=UTC+9), 서머타임 없음.
-    - cron: '10 0 * * 1-5'   # 09:10 KST — 참석/투표 요청
-    - cron: '0 2 * * 1-5'    # 11:00 KST — 집계 결과 발표
+    # GitHub cron은 UTC 기준(KST=UTC+9, 서머타임 없음). 예약이 지연/누락될 수 있어
+    # 시간대마다 여러 번 깨우고, '한 번만 전송' 가드(Firebase 표식)로 중복을 막는다.
+    - cron: '10,20,30,40 0 * * 1-5'    # 09:10~09:40 KST — 참석/투표 요청
+    - cron: '0,10,20,30,40 2 * * 1-5'  # 11:00~11:40 KST — 집계 결과 발표
   workflow_dispatch:          # 수동 실행 버튼 (테스트용)
     inputs:
       mode:
@@ -40,5 +41,7 @@ jobs:
             MIN=$(TZ=Asia/Seoul date +%H%M); MIN=$((10#$MIN))
             if [ "$MIN" -lt 1030 ]; then MODE=request; else MODE=result; fi
           fi
-          echo "Running mode=$MODE (KST $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M'))"
-          python lunch_bot.py "$MODE"
+          # 수동 실행(테스트)은 중복가드를 무시하도록 force 전달
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then FORCE=force; else FORCE=""; fi
+          echo "Running mode=$MODE force=$FORCE (KST $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M'))"
+          python lunch_bot.py "$MODE" $FORCE
