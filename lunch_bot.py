@@ -69,8 +69,21 @@ def aggregate(data):
     ranked = sorted([(r, c) for r, c in tally.items() if c > 0], key=lambda x: -x[1])
     maxc = ranked[0][1] if ranked else 0
     winners = [r for r, c in ranked if c == maxc] if maxc > 0 else []
+
+    # 팀 모집 현황
+    teams_raw = (data or {}).get("teams", {}) or {}
+    teams = []
+    for t in teams_raw.values():
+        mem = (t.get("members") or {})
+        names = [n for n, on in mem.items() if on]
+        if not names:
+            continue
+        teams.append({"restaurant": t.get("restaurant", ""), "host": t.get("host", ""),
+                      "note": t.get("note", ""), "members": names, "ts": t.get("ts", 0)})
+    teams.sort(key=lambda x: x["ts"])
+
     return {"yes": yes, "no": no, "pend": pend, "ranked": ranked,
-            "winners": winners, "maxc": maxc}
+            "winners": winners, "maxc": maxc, "teams": teams}
 
 
 # ---- Claude 사회자 멘트 생성 ----
@@ -127,16 +140,26 @@ def request_prompt():
 
 def result_prompt(agg):
     ranked_txt = ", ".join(f"{r} {c}표" for r, c in agg["ranked"]) or "아직 투표 없음"
+    if agg["teams"]:
+        team_txt = "\n".join(
+            f"- {t['restaurant']} ({len(t['members'])}명: {', '.join(t['members'])})"
+            + (f" / 메모: {t['note']}" if t['note'] else "")
+            for t in agg["teams"]
+        )
+    else:
+        team_txt = "아직 구성된 팀 없음"
     return (
         f"오늘은 {DATE_LABEL}, 지금은 오전 11시 점심 집계 발표 시간이야. 아래 데이터로 사회자 발표 멘트를 써줘.\n"
         f"[참석 {len(agg['yes'])}명] {', '.join(agg['yes']) or '없음'}\n"
         f"[불참 {len(agg['no'])}명] {', '.join(agg['no']) or '없음'}\n"
         f"[미응답 {len(agg['pend'])}명] {', '.join(agg['pend']) or '없음'}\n"
         f"[식당 득표] {ranked_txt}\n"
-        f"[1위] {', '.join(agg['winners']) or '없음'} ({agg['maxc']}표)\n\n"
+        f"[1위] {', '.join(agg['winners']) or '없음'} ({agg['maxc']}표)\n"
+        f"[모집된 팀]\n{team_txt}\n\n"
         "요구사항:\n"
         "- 참석 인원과 오늘의 식당 결과(1위)를 신나게 발표.\n"
         "- 동률이면 '결선'처럼 재치있게 정리하고 정하라고 유도.\n"
+        "- 모집된 팀이 있으면 팀별로 '어느 식당에 누구누구(방장 포함)'를 보기 좋게 소개하고, 아직 팀이 없거나 어디에도 안 낀 참석자가 있으면 팀에 합류하라고 가볍게 권유.\n"
         "- 미응답자가 있으면 이름을 부르며 '아직 안 누른 분~' 식으로 가볍고 장난스럽게 호명(기분 나쁘지 않게, 한 줄).\n"
         "- 마지막에 '맛점하세요' 류의 인사로 마무리.\n"
         f"- 변경/확인 링크 포함: {SITE_URL}\n"
@@ -208,6 +231,13 @@ def fallback_result(agg):
             lines.append(random.choice(WIN_TIE).format(ws=", ".join(agg["winners"]), n=agg["maxc"]))
     else:
         lines.append("🗳️ 아직 식당 투표가 없어요. 지금이라도 한 표!")
+    # 모집된 팀
+    if agg["teams"]:
+        lines.append("")
+        lines.append("🧑‍🤝‍🧑 모집된 팀")
+        for t in agg["teams"]:
+            note = f" — {t['note']}" if t["note"] else ""
+            lines.append(f"   • {t['restaurant']} ({len(t['members'])}명): {', '.join(t['members'])}{note}")
     lines.append("")
     lines.append(random.choice(CLOSINGS))
     lines.append(f"🔁 변경/확인 → {SITE_URL}")
