@@ -74,7 +74,38 @@
   .vote .cnt{position:relative;font-size:13px;color:var(--muted);min-width:34px;text-align:right}
   .vote .crown{position:relative;font-size:16px}
   .vote-hint{font-size:12px;color:var(--muted);margin-top:10px}
-  .vote.disabled{opacity:.5;pointer-events:none}
+  .vote.disabled{opacity:.6}
+  .vote .menu-btn{position:relative;z-index:1;font-size:11px;color:var(--muted);border:1px solid var(--line);
+       background:rgba(255,255,255,.05);border-radius:8px;padding:4px 9px;cursor:pointer;transition:.15s}
+  .vote .menu-btn:hover{border-color:var(--accent2);color:var(--accent2)}
+  .menu-panel{display:none;background:#161a36;border:1px solid var(--line);border-top:none;
+       border-radius:0 0 12px 12px;padding:10px 12px;margin:-6px 2px 2px;font-size:13px;color:var(--muted)}
+  .menu-panel.open{display:block}
+  .menu-panel a{color:var(--accent2);text-decoration:none;font-weight:600}
+  .menu-panel ul{margin:6px 0 0;padding-left:18px} .menu-panel li{margin:3px 0;color:var(--text)}
+  .menu-panel .price{color:var(--muted)}
+
+  /* teams */
+  .team-create{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .team-create select,.team-create input{background:var(--card2);color:var(--text);border:1px solid var(--line);
+       border-radius:10px;padding:10px 11px;font-size:14px;outline:none}
+  .team-create input{flex:1;min-width:150px}
+  .team-create button{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;transition:.15s}
+  .team-create button:hover{filter:brightness(1.08)}
+  .team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+  .team-card{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:15px;display:flex;flex-direction:column;gap:9px}
+  .team-card.mine{outline:2px solid var(--accent2)}
+  .team-card .tr{font-size:17px;font-weight:800;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .team-card .tr .ct{font-size:12px;font-weight:600;color:var(--muted)}
+  .team-card .th{font-size:12px;color:var(--muted)}
+  .team-card .tnote{font-size:12px;color:var(--accent2)}
+  .team-card .tmem{display:flex;flex-wrap:wrap;gap:5px}
+  .team-card .tmem .chip{font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+  .team-card .tbtn{margin-top:auto;border:1px solid var(--line);background:transparent;color:var(--text);
+       border-radius:10px;padding:9px;font-weight:700;cursor:pointer;transition:.15s}
+  .team-card .tbtn.join{background:var(--accent2);color:#06281c;border-color:var(--accent2)}
+  .team-card .tbtn.leave{background:transparent;color:var(--no);border-color:var(--no)}
+  .team-empty{color:var(--muted);font-size:14px;padding:6px 0}
 
   .winner{margin-top:14px;background:linear-gradient(135deg,rgba(82,224,196,.16),rgba(124,131,255,.16));
           border:1px solid var(--accent2);border-radius:14px;padding:14px;text-align:center}
@@ -134,7 +165,7 @@
     <!-- 투표 -->
     <section class="card">
       <h2>🗳️ 점심 식당 투표</h2>
-      <div class="sub"><b>참석</b>으로 체크한 분만 투표할 수 있어요. <b>여러 곳 선택 가능</b> (다시 누르면 해제).</div>
+      <div class="sub"><b>참석</b>으로 체크한 분만 투표할 수 있어요. <b>여러 곳 선택 가능</b> (다시 누르면 해제). 각 식당의 <b>메뉴</b> 버튼으로 메뉴를 볼 수 있어요.</div>
       <div class="vote-list" id="voteList"></div>
       <div class="vote-hint" id="voteHint">내 이름을 선택하고 ‘참석’을 누르면 투표가 열립니다.</div>
       <div class="winner" id="winnerBox" style="display:none">
@@ -144,6 +175,18 @@
       </div>
     </section>
   </div>
+
+  <!-- 팀 모집 -->
+  <section class="card" style="margin-top:18px">
+    <h2>🧑‍🤝‍🧑 점심 팀 모집</h2>
+    <div class="sub">꼭 다 같이 한 곳일 필요 없어요. 원하는 식당으로 <b>팀을 만들고</b> 멤버를 모아보세요. 원하는 팀에 <b>참여</b>하면 됩니다. (한 사람은 한 팀)</div>
+    <div class="team-create">
+      <select id="teamRest"></select>
+      <input id="teamNote" placeholder="메모(선택): 예) 12시 출발 / 매운거 환영" maxlength="40" />
+      <button id="teamCreate" type="button">＋ 팀 만들기</button>
+    </div>
+    <div class="team-grid" id="teamList"></div>
+  </section>
 
   <!-- 대시보드 -->
   <section class="card" style="margin-top:18px">
@@ -158,7 +201,7 @@
   </section>
 
   <footer>
-    공채 2기방 점심봇 · 데이터는 날짜별로 자동 분리되어 매일 새로 시작됩니다 · 매일 오전 10시 Teams 알림
+    공채 2기방 점심봇 · 데이터는 날짜별로 자동 분리되어 매일 새로 시작됩니다 · 평일 09:10 요청 / 11:00 결과 Teams 알림
   </footer>
 </div>
 
@@ -184,6 +227,16 @@ const firebaseConfig = {
 const MEMBERS = ["안소현","오주영","안시현","조상은","이태림","장채아","윤혜준","최준영","용성민","김진영"];
 const RESTAURANTS = ["또바기","명품가마","장꼬방","오니기리","수라간","칼국수","엄마손","더진국","진지왕","참진","김치찌개","샐러리아","샐러리오","영심이","배달(엄마손)"];
 
+/* ③ (선택) 회사 주변 지역명 — 네이버 지도 검색 정확도를 높입니다. 예: "역삼동", "판교역". 비워두면 식당 이름으로만 검색. */
+const AREA = "";
+
+/* ④ (선택) 식당별 메뉴 텍스트. 비워두면 '네이버 지도 보기' 링크만 표시됩니다.
+   채우는 형식 예) "또바기": { items:[ {name:"제육덮밥", price:"9,000"}, {name:"김치찌개", price:"8,000"} ], note:"" }
+   메뉴를 알려주시면 여기에 채워드립니다. */
+const MENUS = {
+  // "또바기": { items:[ {name:"제육덮밥", price:"9,000"} ] },
+};
+
 /* ---------- 내부 로직 ---------- */
 const $ = id => document.getElementById(id);
 const idOf = s => "m" + MEMBERS.indexOf(s);      // member key
@@ -204,7 +257,7 @@ const DAY = todayKST();
 $('todayLabel').textContent = todayLabelKST();
 
 let db=null, configured=false;
-let state = { attendance:{}, votes:{} };
+let state = { attendance:{}, votes:{}, teams:{} };
 let me = localStorage.getItem('lunch_me') || "";
 
 // firebase init (guarded)
@@ -222,6 +275,14 @@ const sel = $('meSelect');
 MEMBERS.forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
 sel.value = me;
 sel.addEventListener('change', ()=>{ me = sel.value; localStorage.setItem('lunch_me',me); render(); });
+
+/* build team restaurant select + create button */
+const teamRestSel = $('teamRest');
+RESTAURANTS.forEach(r=>{ const o=document.createElement('option'); o.value=r; o.textContent=r; teamRestSel.appendChild(o); });
+$('teamCreate').addEventListener('click', ()=>{
+  const rest=$('teamRest').value; const note=$('teamNote').value.trim();
+  createTeam(rest, note); $('teamNote').value='';
+});
 
 /* DB refs */
 function attRef(mid){ return db.ref(`lunch/${DAY}/attendance/${mid}`); }
@@ -247,10 +308,64 @@ function setVote(name, rname){
   voteRef(mid).child(rid).set(has ? null : true);
 }
 
+/* ---------- 팀 모집 ---------- */
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function ensureMe(){
+  if(!configured){ alert("Firebase 설정 후 사용 가능합니다."); return false; }
+  if(!me){ alert("먼저 오른쪽 위에서 '내 이름'을 선택해주세요."); return false; }
+  return true;
+}
+function teamsRef(){ return db.ref(`lunch/${DAY}/teams`); }
+// 나를 다른 팀들에서 빼고(빈 팀은 삭제), exceptId는 건너뜀
+function removeMeFromTeams(exceptId){
+  const teams = state.teams || {};
+  Object.entries(teams).forEach(([tid,t])=>{
+    if(tid===exceptId) return;
+    const mem = t.members || {};
+    if(mem[me]){
+      const others = Object.keys(mem).filter(n=>mem[n] && n!==me);
+      if(others.length===0) teamsRef().child(tid).remove();
+      else teamsRef().child(tid).child('members').child(me).remove();
+    }
+  });
+}
+function createTeam(rest, note){
+  if(!ensureMe()) return;
+  removeMeFromTeams(null);
+  teamsRef().push().set({ restaurant: rest, host: me, note: note||"", members: { [me]: true }, ts: Date.now() });
+}
+function joinTeam(tid){
+  if(!ensureMe()) return;
+  removeMeFromTeams(tid);
+  teamsRef().child(tid).child('members').child(me).set(true);
+}
+function leaveTeam(tid){
+  if(!ensureMe()) return;
+  const t = (state.teams||{})[tid]; if(!t) return;
+  const others = Object.keys(t.members||{}).filter(n=>t.members[n] && n!==me);
+  if(others.length===0) teamsRef().child(tid).remove();   // 마지막 멤버가 나가면 팀 삭제
+  else teamsRef().child(tid).child('members').child(me).remove();
+}
+
 /* realtime listeners */
 if(configured){
   db.ref(`lunch/${DAY}/attendance`).on('value', s=>{ state.attendance = s.val()||{}; render(); });
   db.ref(`lunch/${DAY}/votes`).on('value', s=>{ state.votes = s.val()||{}; render(); });
+  db.ref(`lunch/${DAY}/teams`).on('value', s=>{ state.teams = s.val()||{}; render(); });
+}
+
+/* 식당 메뉴 패널 HTML (등록된 메뉴 + 네이버 지도 링크) */
+function menuHtml(r){
+  const m = MENUS[r] || {};
+  const q = encodeURIComponent((AREA ? AREA+' ' : '') + r);
+  const naver = `https://map.naver.com/p/search/${q}`;
+  let inner='';
+  if(m.items && m.items.length){
+    inner += '<ul>'+m.items.map(it=>`<li>${it.name}${it.price?` <span class="price">· ${it.price}</span>`:''}</li>`).join('')+'</ul>';
+  } else if(m.note){ inner += `<div>${m.note}</div>`; }
+  else { inner += '<div>등록된 메뉴 정보가 없어요. 네이버 지도에서 확인하세요.</div>'; }
+  inner += `<div style="margin-top:8px"><a href="${naver}" target="_blank" rel="noopener">🗺️ 네이버 지도에서 메뉴·정보 보기 →</a></div>`;
+  return inner;
 }
 
 /* ---------- render ---------- */
@@ -296,14 +411,22 @@ function render(){
   RESTAURANTS.forEach(r=>{
     const rid=ridOf(r); const c=tally[rid];
     const lead = (maxCnt>0 && c===maxCnt);
-    const el=document.createElement('div');
-    el.className='vote'+(myVotes[rid]?' mine':'')+(lead?' lead':'')+((myAtt==='yes')?'':' disabled');
-    el.innerHTML=`<span class="bar" style="width:${maxCnt?Math.round(c/maxCnt*100):0}%"></span>
+    const wrap=document.createElement('div');
+    const row=document.createElement('div');
+    row.className='vote'+(myVotes[rid]?' mine':'')+(lead?' lead':'')+((myAtt==='yes')?'':' disabled');
+    row.innerHTML=`<span class="bar" style="width:${maxCnt?Math.round(c/maxCnt*100):0}%"></span>
       <span class="crown">${lead && c>0?'👑':'🍽️'}</span>
       <span class="rn">${r}</span>
+      <button class="menu-btn" type="button">메뉴</button>
       <span class="cnt">${c}표</span>`;
-    el.onclick=()=>setVote(me,r);
-    vl.appendChild(el);
+    // 행 클릭 = 투표 (단, '메뉴' 버튼 클릭은 제외)
+    row.addEventListener('click',(e)=>{ if(e.target.closest('.menu-btn')) return; setVote(me,r); });
+    const panel=document.createElement('div');
+    panel.className='menu-panel';
+    panel.innerHTML=menuHtml(r);
+    row.querySelector('.menu-btn').addEventListener('click',(e)=>{ e.stopPropagation(); panel.classList.toggle('open'); });
+    wrap.appendChild(row); wrap.appendChild(panel);
+    vl.appendChild(wrap);
   });
   $('voteHint').textContent = !me ? '내 이름을 선택해주세요.'
       : myAtt!=='yes' ? '‘참석’으로 체크하면 투표가 열립니다.'
@@ -338,7 +461,34 @@ function render(){
   if(rn.children.length===0) rn.innerHTML='<span class="chip">아직 없음</span>';
   if(rp.children.length===0) rp.innerHTML='<span class="chip">전원 응답 완료 🎉</span>';
 
+  renderTeams();
+
   $('updatedAt').textContent = new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(new Date());
+}
+
+function renderTeams(){
+  const tl=$('teamList'); if(!tl) return;
+  tl.innerHTML='';
+  const teams = state.teams || {};
+  const entries = Object.entries(teams).sort((a,b)=>(a[1].ts||0)-(b[1].ts||0));
+  if(entries.length===0){
+    tl.innerHTML='<div class="team-empty">아직 만들어진 팀이 없어요. 위에서 식당을 골라 ‘＋ 팀 만들기’로 첫 팀을 모집해보세요!</div>';
+    return;
+  }
+  entries.forEach(([tid,t])=>{
+    const mem = t.members || {};
+    const names = Object.keys(mem).filter(n=>mem[n]);
+    const iAmIn = !!(me && mem[me]);
+    const card=document.createElement('div');
+    card.className='team-card'+(iAmIn?' mine':'');
+    card.innerHTML=`<div class="tr">🍽️ ${esc(t.restaurant)} <span class="ct">${names.length}명</span></div>
+      <div class="th">방장: ${esc(t.host)}</div>
+      ${t.note?`<div class="tnote">📝 ${esc(t.note)}</div>`:''}
+      <div class="tmem">${names.map(n=>`<span class="chip">${esc(n)}</span>`).join('') || '<span class="th">아직 멤버 없음</span>'}</div>
+      <button class="tbtn ${iAmIn?'leave':'join'}" type="button">${iAmIn?'나가기':'참여하기'}</button>`;
+    card.querySelector('.tbtn').onclick=()=>{ iAmIn ? leaveTeam(tid) : joinTeam(tid); };
+    tl.appendChild(card);
+  });
 }
 render();
 </script>
