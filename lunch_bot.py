@@ -18,7 +18,7 @@ SITE_URL = os.environ.get("SITE_URL", "https://sohyeonahn.github.io/gongchae2-lu
 # index.html 과 동일한 순서여야 함
 MEMBERS = ["안소현","오주영","안시현","조상은","이태림","장채아","윤혜준","최준영","용성민","김진영"]
 RESTAURANTS = ["또바기","명품가마","장꼬방","오니기리","수라간","칼국수","엄마손","더진국",
-               "진지왕","참진","김치찌개","샐러리아","샐러리오","영심이","배달(엄마손)"]
+               "진지왕","참진","김치찌개","샐러리아","샐러리오","영심이","배달(엄마손)","김마리"]
 
 KST = timezone(timedelta(hours=9))
 now = datetime.now(KST)
