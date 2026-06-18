@@ -62,24 +62,24 @@
   .stat .l{font-size:12px;color:var(--muted);margin-top:2px}
   .stat.yes .n{color:var(--yes)} .stat.no .n{color:var(--no)} .stat.pend .n{color:var(--muted)}
 
-  /* voting */
-  .vote-list{display:flex;flex-direction:column;gap:8px;max-height:none}
-  .vote{display:flex;align-items:center;gap:10px;background:var(--card2);border:1px solid var(--line);
-        border-radius:12px;padding:8px 10px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
+  /* voting — 컴팩트 그리드(여러 열) */
+  .vote-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:6px;align-items:start}
+  .vote{display:flex;align-items:center;gap:6px;background:var(--card2);border:1px solid var(--line);
+        border-radius:9px;padding:5px 8px;cursor:pointer;transition:.15s;position:relative;overflow:hidden}
   .vote:hover{border-color:var(--accent)}
   .vote.mine{outline:2px solid var(--accent2)}
   .vote.lead{border-color:var(--accent2)}
   .vote .bar{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,rgba(124,131,255,.30),rgba(82,224,196,.22));width:0;transition:width .4s ease}
-  .vote .rn{position:relative;font-weight:700;font-size:15px;flex:1}
-  .vote .cnt{position:relative;font-size:13px;color:var(--muted);min-width:34px;text-align:right}
-  .vote .crown{position:relative;font-size:16px}
+  .vote .rn{position:relative;font-weight:700;font-size:13px;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .vote .cnt{position:relative;font-size:11px;color:var(--muted);min-width:24px;text-align:right}
+  .vote .crown{position:relative;font-size:13px}
   .vote-hint{font-size:12px;color:var(--muted);margin-top:10px}
   .vote.disabled{opacity:.6}
-  .vote .menu-btn{position:relative;z-index:1;font-size:11px;color:var(--muted);border:1px solid var(--line);
-       background:rgba(255,255,255,.05);border-radius:8px;padding:4px 9px;cursor:pointer;transition:.15s}
+  .vote .menu-btn{position:relative;z-index:1;font-size:10px;color:var(--muted);border:1px solid var(--line);
+       background:rgba(255,255,255,.05);border-radius:7px;padding:2px 6px;cursor:pointer;transition:.15s;flex-shrink:0}
   .vote .menu-btn:hover{border-color:var(--accent2);color:var(--accent2)}
-  .menu-panel{display:none;background:#161a36;border:1px solid var(--line);border-top:none;
-       border-radius:0 0 12px 12px;padding:10px 12px;margin:-6px 2px 2px;font-size:13px;color:var(--muted)}
+  .menu-panel{display:none;background:#161a36;border:1px solid var(--line);
+       border-radius:9px;padding:8px 10px;margin:2px 0 0;font-size:12px;color:var(--muted)}
   .menu-panel.open{display:block}
   .menu-panel a{color:var(--accent2);text-decoration:none;font-weight:600}
   .menu-panel ul{margin:6px 0 0;padding-left:18px} .menu-panel li{margin:3px 0;color:var(--text)}
@@ -225,7 +225,7 @@ const firebaseConfig = {
 
 /* ② 멤버 / 식당 목록 (필요시 수정) */
 const MEMBERS = ["안소현","오주영","안시현","조상은","이태림","장채아","윤혜준","최준영","용성민","김진영"];
-const RESTAURANTS = ["또바기","명품가마","장꼬방","오니기리","수라간","칼국수","엄마손","더진국","진지왕","참진","김치찌개","샐러리아","샐러리오","영심이","배달(엄마손)"];
+const RESTAURANTS = ["또바기","명품가마","장꼬방","오니기리","수라간","칼국수","엄마손","더진국","진지왕","참진","김치찌개","샐러리아","샐러리오","영심이","배달(엄마손)","김마리"];
 
 /* ③ (선택) 회사 주변 지역명 — 네이버 지도 검색 정확도를 높입니다. 예: "역삼동", "판교역". 비워두면 식당 이름으로만 검색. */
 const AREA = "";
