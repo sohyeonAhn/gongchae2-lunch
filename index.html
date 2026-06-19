@@ -8,7 +8,7 @@
   :root{
     --bg:#0f1226; --bg2:#171a35; --card:#1e2244; --card2:#262b52;
     --line:#33396e; --text:#eef0ff; --muted:#9aa0d4;
-    --accent:#7c83ff; --accent2:#52e0c4; --yes:#36d399; --no:#ff6b81; --pending:#5a608f;
+    --accent:#7c83ff; --accent2:#52e0c4; --yes:#36d399; --no:#ff6b81; --hold:#f5b942; --pending:#5a608f;
     --shadow:0 10px 30px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box}
@@ -47,12 +47,13 @@
   .att.me{outline:2px solid var(--accent);outline-offset:1px}
   .att .nm{font-weight:600;font-size:15px;display:flex;align-items:center;gap:6px}
   .att .dot{width:9px;height:9px;border-radius:50%;background:var(--pending)}
-  .att.is-yes .dot{background:var(--yes)} .att.is-no .dot{background:var(--no)}
-  .toggle{display:flex;gap:6px}
+  .att.is-yes .dot{background:var(--yes)} .att.is-no .dot{background:var(--no)} .att.is-hold .dot{background:var(--hold)}
+  .toggle{display:flex;gap:5px}
   .toggle button{border:1px solid var(--line);background:transparent;color:var(--muted);
-       border-radius:10px;padding:6px 10px;font-size:13px;cursor:pointer;transition:.15s}
+       border-radius:9px;padding:5px 8px;font-size:12.5px;cursor:pointer;transition:.15s}
   .toggle button:hover{border-color:var(--accent)}
   .toggle button.on-yes{background:var(--yes);color:#06281c;border-color:var(--yes);font-weight:700}
+  .toggle button.on-hold{background:var(--hold);color:#3a2a05;border-color:var(--hold);font-weight:700}
   .toggle button.on-no{background:var(--no);color:#330810;border-color:var(--no);font-weight:700}
   .toggle button:disabled{opacity:.4;cursor:not-allowed}
 
@@ -60,7 +61,7 @@
   .stat{flex:1;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
   .stat .n{font-size:26px;font-weight:800}
   .stat .l{font-size:12px;color:var(--muted);margin-top:2px}
-  .stat.yes .n{color:var(--yes)} .stat.no .n{color:var(--no)} .stat.pend .n{color:var(--muted)}
+  .stat.yes .n{color:var(--yes)} .stat.no .n{color:var(--no)} .stat.hold .n{color:var(--hold)} .stat.pend .n{color:var(--muted)}
 
   /* voting — 컴팩트 그리드(여러 열) */
   .vote-list{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;align-items:start}
@@ -117,6 +118,7 @@
   .chip{font-size:12px;padding:4px 9px;border-radius:999px;border:1px solid var(--line);background:var(--card2);color:var(--muted)}
   .chip.yes{color:#06281c;background:var(--yes);border-color:var(--yes)}
   .chip.no{color:#330810;background:var(--no);border-color:var(--no)}
+  .chip.hold{color:#3a2a05;background:var(--hold);border-color:var(--hold)}
 
   footer{text-align:center;color:var(--muted);font-size:12px;margin-top:28px}
   .pill{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);
@@ -153,9 +155,10 @@
     <!-- 출결 -->
     <section class="card">
       <h2>✅ 오늘 점심 참석 체크</h2>
-      <div class="sub">본인 이름의 <b>참석 / 불참</b>을 눌러주세요. 모두에게 실시간 반영됩니다.</div>
+      <div class="sub">본인 이름의 <b>참석 / 보류 / 불참</b>을 눌러주세요. 아직 못 정했으면 <b>보류</b>! 모두에게 실시간 반영됩니다.</div>
       <div class="stat-row">
         <div class="stat yes"><div class="n" id="cntYes">0</div><div class="l">참석</div></div>
+        <div class="stat hold"><div class="n" id="cntHold">0</div><div class="l">보류</div></div>
         <div class="stat no"><div class="n" id="cntNo">0</div><div class="l">불참</div></div>
         <div class="stat pend"><div class="n" id="cntPend">10</div><div class="l">미응답</div></div>
       </div>
@@ -194,6 +197,8 @@
     <div class="sub">참석 명단과 식당별 득표를 한눈에. (마지막 갱신: <span id="updatedAt">-</span>)</div>
     <div style="font-size:13px;color:var(--muted);margin-bottom:4px">참석</div>
     <div class="roster" id="rosterYes"></div>
+    <div style="font-size:13px;color:var(--muted);margin:12px 0 4px">보류</div>
+    <div class="roster" id="rosterHold"></div>
     <div style="font-size:13px;color:var(--muted);margin:12px 0 4px">불참</div>
     <div class="roster" id="rosterNo"></div>
     <div style="font-size:13px;color:var(--muted);margin:12px 0 4px">미응답</div>
@@ -371,27 +376,28 @@ function menuHtml(r){
 /* ---------- render ---------- */
 function render(){
   const att = state.attendance, votes = state.votes;
-  let yes=0,no=0;
+  let yes=0,no=0,hold=0;
   // attendance grid
   const grid = $('attGrid'); grid.innerHTML='';
   MEMBERS.forEach(name=>{
     const mid=idOf(name); const v=att[mid];
-    if(v==='yes')yes++; else if(v==='no')no++;
+    if(v==='yes')yes++; else if(v==='no')no++; else if(v==='hold')hold++;
     const el=document.createElement('div');
-    el.className='att'+(v==='yes'?' is-yes':v==='no'?' is-no':'')+(name===me?' me':'');
+    el.className='att'+(v==='yes'?' is-yes':v==='no'?' is-no':v==='hold'?' is-hold':'')+(name===me?' me':'');
     el.innerHTML=`<span class="nm"><span class="dot"></span>${name}</span>
       <span class="toggle">
         <button data-n="${name}" data-v="yes" class="${v==='yes'?'on-yes':''}">참석</button>
+        <button data-n="${name}" data-v="hold" class="${v==='hold'?'on-hold':''}">보류</button>
         <button data-n="${name}" data-v="no" class="${v==='no'?'on-no':''}">불참</button>
       </span>`;
     grid.appendChild(el);
   });
   grid.querySelectorAll('button').forEach(b=>{
     b.onclick=()=>setAttendance(b.dataset.n,b.dataset.v);
-    if(me && b.dataset.n!==me) b.disabled=false; // 누구나 누를 수 있게 허용(이름 미선택도 가능은 막기)
-    if(!me) b.disabled=true;
+    b.disabled = !me;
   });
-  $('cntYes').textContent=yes; $('cntNo').textContent=no; $('cntPend').textContent=MEMBERS.length-yes-no;
+  $('cntYes').textContent=yes; $('cntHold').textContent=hold; $('cntNo').textContent=no;
+  $('cntPend').textContent=MEMBERS.length-yes-no-hold;
 
   // votes tally (복수 선택: 멤버별 선택 식당 모두 집계)
   const tally={}; RESTAURANTS.forEach(r=>tally[ridOf(r)]=0);
@@ -442,12 +448,12 @@ function render(){
   }else{ wb.style.display='none'; }
 
   // roster
-  const ry=$('rosterYes'),rn=$('rosterNo'),rp=$('rosterPend');
-  ry.innerHTML=rn.innerHTML=rp.innerHTML='';
+  const ry=$('rosterYes'),rh=$('rosterHold'),rn=$('rosterNo'),rp=$('rosterPend');
+  ry.innerHTML=rh.innerHTML=rn.innerHTML=rp.innerHTML='';
   MEMBERS.forEach(name=>{
     const v=att[idOf(name)];
     const chip=document.createElement('span');
-    chip.className='chip '+(v==='yes'?'yes':v==='no'?'no':'');
+    chip.className='chip '+(v==='yes'?'yes':v==='no'?'no':v==='hold'?'hold':'');
     let voteTxt='';
     if(v==='yes'){
       const mv=memberVotes(votes[idOf(name)]);
@@ -455,9 +461,10 @@ function render(){
       if(names.length) voteTxt=' · '+names.join(', ');
     }
     chip.textContent=name+voteTxt;
-    (v==='yes'?ry:v==='no'?rn:rp).appendChild(chip);
+    (v==='yes'?ry:v==='hold'?rh:v==='no'?rn:rp).appendChild(chip);
   });
   if(ry.children.length===0) ry.innerHTML='<span class="chip">아직 없음</span>';
+  if(rh.children.length===0) rh.innerHTML='<span class="chip">없음</span>';
   if(rn.children.length===0) rn.innerHTML='<span class="chip">아직 없음</span>';
   if(rp.children.length===0) rp.innerHTML='<span class="chip">전원 응답 완료 🎉</span>';
 
