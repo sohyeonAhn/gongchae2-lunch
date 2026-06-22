@@ -230,6 +230,8 @@ const firebaseConfig = {
 
 /* ② 멤버 / 식당 목록 (필요시 수정) */
 const MEMBERS = ["안소현","오주영","안시현","조상은","이태림","장채아","윤혜준","최준영","용성민","김진영"];
+/* 기본값을 '불참'으로 둘 멤버 (본인이 참석/보류를 누르면 그 선택이 우선) */
+const DEFAULT_NO = ["용성민","최준영","김진영"];
 const RESTAURANTS = ["또바기","명품가마","장꼬방","오니기리","수라간","칼국수","엄마손","더진국","진지왕","참진","김치찌개","샐러리아","샐러리오","영심이","배달(엄마손)","김마리"];
 
 /* ③ (선택) 회사 주변 지역명 — 네이버 지도 검색 정확도를 높입니다. 예: "역삼동", "판교역". 비워두면 식당 이름으로만 검색. */
@@ -248,6 +250,8 @@ const idOf = s => "m" + MEMBERS.indexOf(s);      // member key
 const ridOf = s => "r" + RESTAURANTS.indexOf(s); // restaurant key
 // 한 멤버의 투표값을 {rid:true} 형태로 정규화 (과거 단일 문자열 데이터도 호환)
 const memberVotes = v => !v ? {} : (typeof v==='string' ? {[v]:true} : v);
+// 실제 응답이 없으면 기본 불참 멤버는 'no'로 간주 (표시·집계용)
+function effAtt(name){ const v = state.attendance[idOf(name)]; return v ? v : (DEFAULT_NO.indexOf(name)>=0 ? 'no' : null); }
 
 function todayKST(){
   const f = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'});
@@ -380,7 +384,7 @@ function render(){
   // attendance grid
   const grid = $('attGrid'); grid.innerHTML='';
   MEMBERS.forEach(name=>{
-    const mid=idOf(name); const v=att[mid];
+    const mid=idOf(name); const v=effAtt(name);
     if(v==='yes')yes++; else if(v==='no')no++; else if(v==='hold')hold++;
     const el=document.createElement('div');
     el.className='att'+(v==='yes'?' is-yes':v==='no'?' is-no':v==='hold'?' is-hold':'')+(name===me?' me':'');
@@ -410,7 +414,7 @@ function render(){
     if(picked) votedMembers++;
   });
   const maxCnt=Math.max(0,...Object.values(tally));
-  const myAtt = me ? att[idOf(me)] : null;
+  const myAtt = me ? effAtt(me) : null;
   const myVotes = me ? memberVotes(votes[idOf(me)]) : {};
 
   const vl=$('voteList'); vl.innerHTML='';
@@ -451,7 +455,7 @@ function render(){
   const ry=$('rosterYes'),rh=$('rosterHold'),rn=$('rosterNo'),rp=$('rosterPend');
   ry.innerHTML=rh.innerHTML=rn.innerHTML=rp.innerHTML='';
   MEMBERS.forEach(name=>{
-    const v=att[idOf(name)];
+    const v=effAtt(name);
     const chip=document.createElement('span');
     chip.className='chip '+(v==='yes'?'yes':v==='no'?'no':v==='hold'?'hold':'');
     let voteTxt='';
